@@ -1,0 +1,430 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8">
+  <title>Cloud Storage</title>
+  <style>
+    body {
+      margin: 0;
+      font-family: 'Poppins', sans-serif;
+      display: flex;
+      justify-content: center;
+      align-items: center;
+      min-height: 100vh;
+      overflow: hidden;
+      background: url('BACKGROUND.jpg') no-repeat center center fixed;
+      background-size: cover;
+    }
+    }
+
+    /* Realistic Animated Ocean Wave Background */
+    .ocean {
+      position: fixed;
+      top: 0;
+      left: 0;
+      width: 100%;
+      height: 100%;
+      z-index: -1;
+      background: linear-gradient(to bottom, #38bdf8, #0284c7, #0369a1);
+    }
+
+    .wave {
+      position: absolute;
+      bottom: 0;
+      left: 0;
+      width: 200%;
+      height: 100vh;
+      background: url('data:image/svg+xml;utf8,<svg viewBox="0 0 1200 120" xmlns="http://www.w3.org/2000/svg"><path d="M0,0 C150,90 350,-40 500,40 C650,120 900,10 1200,30 L1200,120 L0,120 Z" fill="rgba(255,255,255,0.15)"/></svg>');
+      background-repeat: repeat-x;
+      background-size: 50% 100vh;
+    }
+
+    .wave.wave1 {
+      animation: animateWave 12s linear infinite;
+      z-index: 1;
+      opacity: 1;
+      animation-delay: 0s;
+      bottom: 0;
+    }
+
+    .wave.wave2 {
+      animation: animateWaveReverse 8s linear infinite;
+      z-index: 2;
+      opacity: 0.5;
+      animation-delay: -3s;
+      bottom: 10px;
+    }
+
+    .wave.wave3 {
+      animation: animateWave 15s linear infinite;
+      z-index: 3;
+      opacity: 0.2;
+      animation-delay: -5s;
+      bottom: 20px;
+    }
+
+    @keyframes animateWave {
+      0% { transform: translateX(0); }
+      100% { transform: translateX(-50%); }
+    }
+
+    @keyframes animateWaveReverse {
+      0% { transform: translateX(-50%); }
+      100% { transform: translateX(0); }
+    }
+    
+    /* Transparent Center Main Container */
+    .main {
+      width: 90%;
+      max-width: 1000px;
+      padding: 30px;
+      color: #000;
+      background: rgba(255, 255, 255, 0.25);
+      backdrop-filter: blur(8px);
+      -webkit-backdrop-filter: blur(8px);
+      border-radius: 20px;
+      box-shadow: 0 10px 30px rgba(0,0,0,0.2);
+      max-height: 90vh;
+      overflow-y: auto;
+      z-index: 10;
+      border: 1px solid rgba(255, 255, 255, 0.4);
+    }
+
+    .header { display: flex; justify-content: flex-end; margin-bottom: 20px; }
+    .user { text-align: right; }
+    .user p { margin: 0; font-weight: bold; color: #000; font-size: 15px; }
+    .user small { color: #222; font-weight: 600; }
+
+    .storage {
+      background: rgba(255, 255, 255, 0.4);
+      backdrop-filter: blur(5px);
+      border-radius: 15px;
+      padding: 20px;
+      box-shadow: 0 4px 15px rgba(0,0,0,0.1);
+      border: 1px solid rgba(255, 255, 255, 0.3);
+    }
+    .storage h3 { margin-top: 0; color: #000; }
+    .bar {
+      width: 100%;
+      height: 10px;
+      background: rgba(255, 255, 255, 0.5);
+      border-radius: 5px;
+      margin: 10px 0;
+      overflow: hidden;
+    }
+    .progress {
+      height: 10px;
+      width: 0%;
+      background: #000;
+      border-radius: 5px;
+      transition: width 0.3s ease;
+    }
+    #storageText {
+      color: #000;
+      font-weight: 600;
+    }
+    
+    /* Upload Section Styling */
+    .upload-section {
+      display: flex;
+      align-items: center;
+      gap: 10px;
+      margin-top: 15px;
+      flex-wrap: wrap;
+    }
+    input[type="file"] {
+      background: rgba(255, 255, 255, 0.5);
+      padding: 8px;
+      border-radius: 8px;
+      border: 1px solid rgba(0, 0, 0, 0.5);
+      color: #000;
+      font-size: 13px;
+      cursor: pointer;
+    }
+
+    button {
+      background: #000;
+      color: white;
+      border: none;
+      padding: 10px 15px;
+      border-radius: 8px;
+      cursor: pointer;
+      transition: opacity 0.2s;
+      font-weight: 600;
+    }
+    button:hover { opacity: 0.8; }
+
+    .files { margin-top: 30px; }
+    #search {
+      width: 100%;
+      padding: 10px;
+      border-radius: 8px;
+      border: 1px solid rgba(0, 0, 0, 0.5);
+      margin-bottom: 15px;
+      box-sizing: border-box;
+      color: #000;
+      background: rgba(255, 255, 255, 0.5);
+      font-family: 'Poppins', sans-serif;
+    }
+    #search::placeholder { color: #333; }
+    
+    .filters { display: flex; gap: 8px; flex-wrap: wrap; margin-bottom: 15px; }
+    .filters button {
+      background: rgba(255, 255, 255, 0.4);
+      color: #000;
+      padding: 6px 12px;
+      font-size: 12px;
+      font-weight: 600;
+      border: 1px solid rgba(255, 255, 255, 0.6);
+    }
+    .filters button.active {
+      background: #000;
+      color: white;
+    }
+
+    table {
+      width: 100%;
+      border-collapse: collapse;
+      background: rgba(255, 255, 255, 0.4);
+      backdrop-filter: blur(5px);
+      border-radius: 10px;
+      overflow: hidden;
+      border: 1px solid rgba(255, 255, 255, 0.3);
+    }
+    th, td { padding: 12px; text-align: left; color: #000; font-weight: 500; }
+    th { background: rgba(255, 255, 255, 0.5); color: #000; font-weight: 700; }
+    td { border-bottom: 1px solid rgba(0, 0, 0, 0.1); }
+    
+    .action-btn {
+      padding: 5px 10px;
+      font-size: 12px;
+      margin-right: 5px;
+    }
+    .open-btn { background: #000; color: #fff; }
+    .delete-btn { background: #444; color: #fff; }
+
+    .footer {
+      text-align: center;
+      margin-top: 20px;
+      font-style: italic;
+      color: #fff;
+      text-shadow: 1px 1px 2px #000;
+      font-weight: 600;
+    }
+  </style>
+</head>
+<body>
+
+  <!-- Realistic Waving Ocean Background Effect -->
+  <div class="ocean">
+    <div class="wave wave1"></div>
+    <div class="wave wave2"></div>
+    <div class="wave wave3"></div>
+  </div>
+
+  <div class="main">
+    <div class="header">
+      <div class="user">
+        <p>CLOUD STORAGE</p>
+        <small></small>
+      </div>
+    </div>
+
+    <div class="storage">
+      <h3 id="sectionTitle">Storage Used</h3>
+      <div class="bar">
+        <div class="progress" id="progress"></div>
+      </div>
+      <p id="storageText">0 GB / 1 TB — Available storage 100%</p>
+      
+      <!-- Choose File input & Upload button -->
+      <div class="upload-section">
+        <input type="file" id="fileInput">
+        <button id="uploadBtn">Upload Files</button>
+      </div>
+    </div>
+
+    <div class="files">
+      <input type="text" id="search" placeholder="Search files...">
+      <div class="filters" id="filterContainer">
+        <button class="active" data-filter="ALL">ALL</button>
+        <button data-filter="PDF">PDF</button>
+        <button data-filter="DOC">DOC/DOCX</button>
+        <button data-filter="IMG">JPG/PNG</button>
+        <button data-filter="MP4">MP4</button>
+        <button data-filter="TXT">TXT</button>
+        <button data-filter="ZIP">ZIP</button>
+      </div>
+
+      <table>
+        <thead>
+          <tr>
+            <th>FILE NAME</th>
+            <th>FILE TYPE</th>
+            <th>FILE SIZE</th>
+            <th>DATE UPLOADED</th>
+            <th>UPLOADED BY</th>
+            <th>ACTIONS</th>
+          </tr>
+        </thead>
+        <tbody id="fileList">
+          <!-- Dynamic rows will go here -->
+        </tbody>
+      </table>
+      <p class="footer">Secured Files, For Dreams</p>
+    </div>
+  </div>
+
+  <script>
+    let files = [];
+    let currentFilter = "ALL";
+    let searchQuery = "";
+
+    const totalCapacityTB = 1; // 1 TB
+    const totalCapacityBytes = totalCapacityTB * 1024 * 1024 * 1024 * 1024;
+
+    const fileListEl = document.getElementById('fileList');
+    const progressEl = document.getElementById('progress');
+    const storageTextEl = document.getElementById('storageText');
+    const fileInput = document.getElementById('fileInput');
+    const uploadBtn = document.getElementById('uploadBtn');
+    const searchInput = document.getElementById('search');
+    const filterButtons = document.querySelectorAll('#filterContainer button');
+
+    function renderApp() {
+      renderFiles();
+      updateStorageInfo();
+    }
+
+    function renderFiles() {
+      fileListEl.innerHTML = "";
+
+      let filteredFiles = files.filter(file => {
+        let matchesSearch = file.name.toLowerCase().includes(searchQuery.toLowerCase());
+        let matchesCategory = true;
+        if (currentFilter !== "ALL") {
+          matchesCategory = file.type.toUpperCase().includes(currentFilter);
+        }
+        return matchesSearch && matchesCategory;
+      });
+
+      if (filteredFiles.length === 0) {
+        fileListEl.innerHTML = `<tr><td colspan="6" style="text-align: center; color: #333; font-weight: 600;">No files found.</td></tr>`;
+        return;
+      }
+
+      filteredFiles.forEach((file) => {
+        let originalIndex = files.indexOf(file);
+
+        const row = `
+          <tr>
+            <td>${file.name}</td>
+            <td>${file.type}</td>
+            <td>${file.sizeStr}</td>
+            <td>${file.date}</td>
+            <td>${file.uploader}</td>
+            <td>
+              <button class="action-btn open-btn" onclick="openFile(${originalIndex})">Open</button>
+              <button class="action-btn delete-btn" onclick="deleteFile(${originalIndex})">Delete</button>
+            </td>
+          </tr>`;
+        fileListEl.innerHTML += row;
+      });
+    }
+
+    function updateStorageInfo() {
+      let totalUsedBytes = files.reduce((acc, file) => acc + file.sizeBytes, 0);
+      let percentage = (totalUsedBytes / totalCapacityBytes) * 100;
+      if (percentage > 100) percentage = 100;
+
+      let usedStr = "";
+      if (totalUsedBytes === 0) {
+        usedStr = "0 GB";
+      } else if (totalUsedBytes < 1024 * 1024) {
+        usedStr = (totalUsedBytes / 1024).toFixed(1) + " KB";
+      } else if (totalUsedBytes < 1024 * 1024 * 1024) {
+        usedStr = (totalUsedBytes / (1024 * 1024)).toFixed(1) + " MB";
+      } else if (totalUsedBytes < 1024 * 1024 * 1024 * 1024) {
+        usedStr = (totalUsedBytes / (1024 * 1024 * 1024)).toFixed(2) + " GB";
+      } else {
+        usedStr = (totalUsedBytes / (1024 * 1024 * 1024 * 1024)).toFixed(2) + " TB";
+      }
+
+      progressEl.style.width = percentage.toFixed(1) + "%";
+      storageTextEl.innerText = `${usedStr} / 1 TB — Available storage ${(100 - percentage).toFixed(1)}%`;
+    }
+
+    uploadBtn.addEventListener('click', () => {
+      const file = fileInput.files[0];
+      if (!file) {
+        alert("Please choose a file first!");
+        return;
+      }
+
+      const fileName = file.name;
+      const fileExtension = fileName.split('.').pop().toUpperCase();
+      const fileSizeInBytes = file.size;
+      
+      let fileSizeStr = "";
+      if (fileSizeInBytes < 1024 * 1024) {
+        fileSizeStr = (fileSizeInBytes / 1024).toFixed(1) + " KB";
+      } else {
+        fileSizeStr = (fileSizeInBytes / (1024 * 1024)).toFixed(1) + " MB";
+      }
+
+      const date = new Date().toLocaleString();
+      const uploader = 'JHON PAUL LEONIN';
+      const fileUrl = URL.createObjectURL(file);
+
+      files.push({
+        name: fileName,
+        type: fileExtension,
+        sizeBytes: fileSizeInBytes,
+        sizeStr: fileSizeStr,
+        date: date,
+        uploader: uploader,
+        url: fileUrl
+      });
+
+      fileInput.value = ""; 
+      renderApp();
+      alert(`File "${fileName}" uploaded successfully!`);
+    });
+
+    window.openFile = function(index) {
+      const file = files[index];
+      if (file && file.url) {
+        window.open(file.url, '_blank');
+      } else {
+        alert("Unable to open this file.");
+      }
+    };
+
+    window.deleteFile = function(index) {
+      if (confirm(`Are you sure you want to delete ${files[index].name}?`)) {
+        if (files[index].url) {
+          URL.revokeObjectURL(files[index].url);
+        }
+        files.splice(index, 1);
+        renderApp();
+      }
+    };
+
+    searchInput.addEventListener('input', (e) => {
+      searchQuery = e.target.value;
+      renderFiles();
+    });
+
+    filterButtons.forEach(btn => {
+      btn.addEventListener('click', () => {
+        filterButtons.forEach(b => b.classList.remove('active'));
+        btn.classList.add('active');
+        currentFilter = btn.getAttribute('data-filter');
+        renderFiles();
+      });
+    });
+
+    renderApp();
+  </script>
+</body>
+</html>
